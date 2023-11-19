@@ -5,7 +5,7 @@
 | :---:   | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | gender | categorical   | male   | female   |    |     |    |     |
 | race/ethnicity |categorical |group_A   | group_B   | group_C   | group_D  | group_E |     | 
-| parental level of education |categorical |some high school | high school | some college | associate's degree | Bachelor's degree | Master's degree | 
+| parental level of education |categorical |some high school | high school | some college | associate's degree | bachelor's degree | master's degree | 
 | lunch | categorical   | free/reduced | standard |     |      |     |      |
 | test_prep course | categorical | completed | none |     |     |      |      |
 | math | continuous |     |      |      |      |      |      |
