@@ -1,7 +1,7 @@
 # High_school_performance
 
 
-| variables | categorical or continuous | level_1 | level_2 | level_3 | level_4 | level_5 | level_6 |
+| variables | categorical/continuous | level_1 | level_2 | level_3 | level_4 | level_5 | level_6 |
 | :---:   | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | gender | categorical   | male   | female   |    |     |    |     |
 | race/ethnicity |categorical |group_A   | group_B   | group_C   | group_D  | group_E |     | 
