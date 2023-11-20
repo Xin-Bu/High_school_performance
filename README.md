@@ -1,6 +1,8 @@
 ## High-school-performance-project
 ### Description of the dataset
-This dataset consists of 1,000 rows of information on the performance of high school students in math, reading, and writing. The data was collected from three high schools in the U.S. The demographic information includes gender, race/ethnicity, parental level of education, lunch, test preparation course. More information on the variables are:
+This dataset consists of 1,000 rows of information on the performance of high school students in math, reading, and writing. The data was collected from three high schools in the U.S. The demographic information includes gender, race/ethnicity, parental level of education, lunch, test preparation course. 
+
+#### Variables:
 
 • Gender: The gender of the student (male/female)
 
@@ -18,7 +20,7 @@ This dataset consists of 1,000 rows of information on the performance of high sc
 
 • Writing score: The student's score on a standardized writing test
 
-For the categorical variables, the table below gives us an idea of the levels of those variables. 
+#### Levels of categorical variables 
 | variables | categorical/continuous | level_1 | level_2 | level_3 | level_4 | level_5 | level_6 |
 | :---:   | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | gender | categorical   | male   | female   |    |     |    |     |
