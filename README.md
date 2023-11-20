@@ -1,5 +1,5 @@
 ## High-school-performance-project
-### Dataset
+### Description of the dataset
 This dataset consists of 1,000 rows of information on the performance of high school students in math, reading, and writing. The data was collected from three high schools in the U.S. The demographic information includes gender, race/ethnicity, parental level of education, lunch, test preparation course. More information on the variables are:
 
 • Gender: The gender of the student (male/female)
