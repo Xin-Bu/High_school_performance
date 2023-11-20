@@ -1,4 +1,4 @@
-# High_school_performance
+# High-school-performance
 
 
 | variables | categorical/continuous | level_1 | level_2 | level_3 | level_4 | level_5 | level_6 |
