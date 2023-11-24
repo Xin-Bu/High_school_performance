@@ -1,6 +1,6 @@
 ## High school performance project
 ### Description of the dataset
-The data was collected from three high schools in the U.S. consisting of information on the students' performance in math, reading, and writing which are continuous outcome variables. The students' demographic information includes gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project. 
+The data was collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing which are continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project. 
 
 #### Variables:
 
