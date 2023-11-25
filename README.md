@@ -1,7 +1,8 @@
 ## High school performance
 ### Description of the dataset
-The data were collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing which are continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project. 
-The R code for multi-linear regression was written in R Markdown and knitted to html.
+The data were collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing which are continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project.
+
+The R code for data visualization, descriptive statistics, and multi-linear regression was written in R Markdown and knitted to html.
 #### Variables:
 * Gender: The gender of the student (male/female)
 * Race/ethnicity: The student's racial or ethnic background (Asian, African-American, Hispanic, etc.)
