@@ -1,0 +1,268 @@
+---
+title: "High School Performance"
+author: "Xin Bu"
+date: "11/14/2023"
+output: html_document
+html_document:
+    toc: true
+    toc_depth: 6
+    number_sections: true
+    toc_float: true
+    code_folding: hide
+    theme: flatly
+    code_download: true
+---
+-------------
+
+### Introduction
+
+The data were collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing which are continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project. The purpose of this project is to visualize the data, build a multi-linear regression model, and compare different models.
+
+
+```{r setup, include=FALSE}
+library(tidyverse,warn.conflicts = F)
+library(tidymodels,warn.conflicts = F)
+library(lubridate,warn.conflicts = F)
+library(here)
+library(table1)
+library(kknn)
+library(kernlab)
+library(gcookbook)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+#### Load data
+```{r model-fit1, message=F}
+hs <- read_csv("high_school.csv")
+
+```
+
+#### Rename the columns
+```{r message=F,warning=F}
+
+hs <- hs %>% 
+    rename("Gender" = "gender", "Eth" = "race/ethnicity", "Par_edu" = "parental level of education", "Lunch" = "lunch", "Test_prep" = "test preparation course", "Math" = "math score", "Reading" = "reading score", "Writing" = "writing score")
+
+if(F){
+  skimr::skim(d)
+  Hmisc::describe(d)
+}
+```
+
+### Data Visualization
+#### Visualize the relationship between math and reading by parental education level and lunch type
+```{r model-fit2, message=F}
+ggplot(data = hs) +
+  geom_point(mapping = aes(x = Math, y = Reading, color = Lunch)) +
+  facet_wrap(~Par_edu) + 
+  scale_color_hue(h=c(45, 245))
+```
+
+#### Visualize math and writing by gender
+```{r}
+ggplot(hs, aes(x = Math, y = Writing, colour = Gender)) +
+    geom_point() +
+    scale_colour_brewer(palette = "Set2") +
+    geom_smooth()
+
+```
+
+#### Visualize math, reading, and writing for those who completed the test preparation. 
+```{r}
+test_prep <- hs %>%
+  filter(Test_prep == "completed") %>%
+  select(Math,Reading,Writing)
+
+pairs(test_prep)
+```
+
+#### Visualize the count of race/ethnicity by parental education level
+```{r}
+ggplot(data = hs, mapping = aes(x = Eth, fill = Par_edu)) + 
+  geom_bar(alpha = 1, position = "identity")+
+  labs(x="Race/ethnicity", y="Count", title = "Parent education level by race/ethnicity")+
+  scale_fill_brewer(palette=c("Set3"))+
+  theme(plot.title = element_text(hjust = 0.5, vjust = 3)) 
+
+```
+
+#### Visualize math grouped by lunch type and gender based on parental education level
+```{r}
+ggplot(data = hs) +
+  geom_boxplot(mapping = aes(x = reorder(Par_edu, Math, FUN = median), y = Math, color=Gender)) +
+  facet_wrap(~Lunch)+ 
+  scale_color_hue(h=c(45, 255)) +
+  coord_flip()
+```
+
+### Descriptive statistics 
+#### Math, reading, and writing related to each categorical variable
+```{r}
+table1::label(hs$Gender) <= "Gender"
+table1::label(hs$Eth)<="Race/Ethnicity"
+table1::label(hs$Lunch) <="Lunch"
+table1::label(hs$Par_edu)<="Parental Level of Education"
+table1::label(hs$Test_prep) <= "Test Preparation"
+table1::label(hs$Math)<= "Math"
+table1::label(hs$Reading) <= "Reading"
+table1::label(hs$Writing) <= "Writing"
+
+table1::table1(~Math+Reading+Writing|Eth, data=hs)
+table1::table1(~Math+Reading+Writing|Lunch, data=hs)
+table1::table1(~Math+Reading+Writing|Gender,data=hs)
+table1::table1(~Math+Reading+Writing|Test_prep, data=hs)
+table1::table1(~Math+Reading+Writing|Par_edu, data=hs)
+
+```
+
+### Model Building
+#### Build a model predicting math based on the categorical variables. 
+
+```{r model-fit3, message=F}
+
+
+lm.1 <- lm(Math ~ Eth + Lunch + Par_edu + Test_prep + Gender, data=hs)
+
+mod.summary <- summary(lm.1)
+
+coefs <- mod.summary$coefficients[,1]
+coef.se <- mod.summary$coefficients[,2] 
+rse <- mod.summary$sigma
+
+
+for.table <- tibble(term=rownames(mod.summary$coefficients),
+                    coefficient=coefs,
+                    se=coef.se)
+
+knitr::kable(for.table,digits=2)
+
+```
+
+#### Split a training dataset and build the model recipe
+```{r}
+set.seed(20231116)
+
+splits <- initial_split(hs,strata=Par_edu)
+cv_folds <- vfold_cv(training(splits))
+
+high_school.rec <- 
+  recipe(Math ~ Eth + Lunch + Gender + Test_prep,
+         data=training(splits)) %>% 
+  step_dummy(all_nominal()) %>% 
+  step_normalize(all_predictors()) %>% 
+  prep()
+
+```
+
+#### Build a linear regression model, support vector machine model, and k nearest neighbors model
+```{r}
+high_school.linear <- linear_reg() %>% 
+  set_engine("lm")
+
+high_school.svm <- svm_rbf(
+  cost = tune(),
+  rbf_sigma = tune()) %>% 
+  set_engine("kernlab") %>% 
+  set_mode("regression")
+
+high_school.knn <- nearest_neighbor(
+  neighbors = tune()) %>% 
+  set_engine("kknn") %>% 
+  set_mode("regression")
+
+lin.wf <- workflow() %>% 
+  add_recipe(high_school.rec) %>% 
+  add_model(high_school.linear)
+
+svm.wf <- workflow() %>% 
+  add_recipe(high_school.rec) %>% 
+  add_model(high_school.svm)
+
+knn.wf <- workflow() %>% 
+  add_recipe(high_school.rec) %>% 
+  add_model(high_school.knn)
+```
+
+#### Create different values for tuning the model parameters and get results of tuning these models
+```{r cache = T}
+
+knn.grid <- grid_regular(
+  neighbors(range = c(1,50)),
+  levels=10
+)
+
+svm.grid <- grid_regular(
+  cost(),
+  rbf_sigma(),
+  levels=4)
+
+knn.results <- 
+  knn.wf %>% 
+  tune_grid(
+    resamples=cv_folds,
+    grid=knn.grid)
+
+svm.results <- 
+  svm.wf %>% 
+  tune_grid(
+    resamples=cv_folds,
+    grid=svm.grid)
+
+
+if(F){
+  knn.results %>% collect_metrics() %>% filter(.metric=="rsq") %>% arrange(mean)
+  svm.results %>% collect_metrics() %>% filter(.metric=="rmse") %>% arrange(mean)
+}
+
+```
+
+#### Finalize workflows, fit the training data, have each model to predict, and then we compare the results. 
+```{r}
+
+svm.final <- svm.wf %>% 
+  finalize_workflow(svm.results %>% select_best("rmse")) %>% 
+  fit(training(splits))
+
+knn.final <- knn.wf %>% 
+  finalize_workflow(knn.results %>% select_best("rmse")) %>% 
+  fit(training(splits))
+
+lin.final <- lin.wf %>% 
+  fit(training(splits))
+
+
+high_school <- testing(splits)
+
+high_school <- high_school %>% 
+  mutate(svm_pred = predict(svm.final,new_data=high_school) %>% pull(.pred)) %>% 
+  mutate(knn_pred = predict(knn.final,new_data=high_school) %>% pull(.pred)) %>% 
+  mutate(lin_pred = predict(lin.final,new_data=high_school) %>% pull(.pred)) 
+
+holder <- metrics(high_school,truth=Math,estimate=svm_pred) %>% 
+  select(-.estimator) %>% 
+  rename(metric = .metric,
+         svm = .estimate)
+
+holder <- holder %>% 
+  mutate(knn = 
+    metrics(high_school,truth=Math,estimate=knn_pred) %>% 
+      pull(.estimate)
+  ) %>% 
+  mutate(linear = 
+    metrics(high_school,truth=Math,estimate=lin_pred) %>% 
+      pull(.estimate)
+  )
+
+holder %>% 
+  pivot_longer(-metric) %>% 
+  ggplot(aes(x=name,y=value,group=1)) + 
+  geom_point() + 
+  facet_wrap(~metric,scales="free_y") + 
+  theme_bw() +
+  labs(x="Model",y="Metric")
+
+
+```
+
