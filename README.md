@@ -1,18 +1,17 @@
 ## High school performance
 ### Dataset
-The data were collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing, continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project.
+The data were collected from three high schools in the US, consisting of information on the students' performance in three continuous outcome variables: math, reading, and writing, as well as five predictors: their demographic information on gender, race/ethnicity, parental level of education, lunch type, and test preparation course .
 
 The R code for data visualization, descriptive statistics, and multi-linear regression was written in R Markdown and knitted to html.
 #### Variables:
+* Math score: The student's score on a standardized mathematics test, a continuous variable
+* Reading score: The student's score on a standardized reading test, a continuous variable
+* Writing score: The student's score on a standardized writing test, a continuous variable
 * Race/ethnicity: The student's racial or ethnic background (Asian, African-American, Hispanic, etc.)
 * Parental level of education: The highest level of education attained by the student's parent(s) or guardian(s)
 * Gender: The gender of the student (male/female)
 * Lunch: Whether the student receives free or reduced-price lunch (yes/no)
 * Test preparation course: Whether the student completed a test preparation course (yes/no)
-* Math score: The student's score on a standardized mathematics test, a continuous variable
-* Reading score: The student's score on a standardized reading test, a continuous variable
-* Writing score: The student's score on a standardized writing test, a continuous variable
-
 #### Levels of categorical variables:
 
 | variables | level_1 | level_2 | level_3 | level_4 | level_5 | level_6 |
