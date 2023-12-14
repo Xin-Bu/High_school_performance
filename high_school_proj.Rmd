@@ -36,38 +36,73 @@ knitr::opts_chunk$set(echo = TRUE)
 #### Load data
 ```{r model-fit1, message=F}
 hs <- read_csv("high_school.csv")
-
+head(hs)
 ```
 
 #### Rename the columns
 ```{r message=F,warning=F}
 
 hs <- hs %>% 
-    rename("Gender" = "gender", "Eth" = "race/ethnicity", "Par_edu" = "parental level of education", "Lunch" = "lunch", "Test_prep" = "test preparation course", "Math" = "math score", "Reading" = "reading score", "Writing" = "writing score")
+    rename("Sex" = "gender", "Eth" = "race/ethnicity", "Par_edu" = "parental level of education", "Lunch" = "lunch", "Test_prep" = "test preparation course", "Math" = "math score", "Reading" = "reading score", "Writing" = "writing score")
 
-if(F){
-  skimr::skim(d)
-  Hmisc::describe(d)
-}
 ```
 
 ### Data Visualization
-#### Visualize the relationship between math and reading by parental education level and lunch type
+#### Create a new table to summarize test preparation by race
+
+```{r, message=FALSE}
+new_test_prep <- hs %>%
+  group_by(Eth,Test_prep)%>%
+  summarise(N=n())%>%
+  mutate(freq = N/sum(N),
+         pct = round(freq*100),0)
+
+new_test_prep%>% group_by(Test_prep)%>%
+  summarize(total=sum(pct))
+
+```
+
+#### Visualize the percentage of test prepartion by race
+
+```{r}
+ggplot(new_test_prep, aes(x=Eth, y=pct, fill=Test_prep))+
+  geom_col() +
+  labs(x = "Race", y = "Percent", title= "Test Preparation by Race")+
+  guides(fill= guide_legend(reverse = TRUE))+
+  scale_fill_brewer(palette=c("Paired"))
+
+```
+
+
+#### Visualize math, reading, and writing by sex
+
+```{r}
+
+ggplot(hs,aes(x= Math, fill = Sex, color = Sex))+
+  geom_density(alpha = 0.5,mapping=(aes(y = after_stat(scaled))))+
+  scale_fill_manual(values = c("#E46726","#6D9EC1"))
+
+ggplot(hs,aes(x= Reading, fill = Sex, color = Sex))+
+  geom_density(alpha = 0.5,mapping=(aes(y = after_stat(scaled))))+
+  scale_fill_manual(values = c("#E46726","#6D9EC1"))
+
+ggplot(hs,aes(x= Writing, fill = Sex, color = Sex))+
+  geom_density(alpha = 0.5,mapping=(aes(y = after_stat(scaled))))+
+  scale_fill_manual(values = c("#E46726","#6D9EC1"))
+
+```
+
+#### Reorder the categorical variable Par_edu and then visualize the relationship between math and reading by parental education level and lunch type
+
 ```{r model-fit2, message=F}
+hs$Par_edu <- factor(hs$Par_edu, levels=c("some high school","high school","some college","associate's degree","bachelor's degree","master's degree"))
+
 ggplot(data = hs) +
   geom_point(mapping = aes(x = Math, y = Reading, color = Lunch)) +
   facet_wrap(~Par_edu) + 
   scale_color_hue(h=c(45, 245))
 ```
 
-#### Visualize math and writing by gender
-```{r}
-ggplot(hs, aes(x = Math, y = Writing, colour = Gender)) +
-    geom_point() +
-    scale_colour_brewer(palette = "Set2") +
-    geom_smooth()
-
-```
 
 #### Visualize math, reading, and writing for those who completed the test preparation. 
 ```{r}
@@ -75,23 +110,28 @@ test_prep <- hs %>%
   filter(Test_prep == "completed") %>%
   select(Math,Reading,Writing)
 
-pairs(test_prep)
+#pairs(test_prep)
+pairs(test_prep,
+        col = c("#E46726","#6D9EC1"),
+        pch = 21,
+        main = "Pairwise Correlation")
 ```
 
 #### Visualize the count of race/ethnicity by parental education level
 ```{r}
-ggplot(data = hs, mapping = aes(x = Eth, fill = Par_edu)) + 
-  geom_bar(alpha = 1, position = "identity")+
-  labs(x="Race/ethnicity", y="Count", title = "Parent education level by race/ethnicity")+
+
+ggplot(hs, aes(x = Eth, fill = Par_edu)) + 
+  geom_bar(alpha = 1, position = "dodge2")+
+  labs(x="Race/ethnicity", y="Count", title = "Parental Education by Race/Ethnicity")+
   scale_fill_brewer(palette=c("Set3"))+
   theme(plot.title = element_text(hjust = 0.5, vjust = 3)) 
 
 ```
 
-#### Visualize math grouped by lunch type and gender based on parental education level
+#### Visualize math by lunch type and sex based on parental education level
 ```{r}
 ggplot(data = hs) +
-  geom_boxplot(mapping = aes(x = reorder(Par_edu, Math, FUN = median), y = Math, color=Gender)) +
+  geom_boxplot(mapping = aes(x = reorder(Par_edu, Math, FUN = median), y = Math, fill=Sex)) +
   facet_wrap(~Lunch)+ 
   scale_color_hue(h=c(45, 255)) +
   coord_flip()
@@ -100,7 +140,7 @@ ggplot(data = hs) +
 ### Descriptive statistics 
 #### Math, reading, and writing related to each categorical variable
 ```{r}
-table1::label(hs$Gender) <= "Gender"
+table1::label(hs$Sex) <= "Sex"
 table1::label(hs$Eth)<="Race/Ethnicity"
 table1::label(hs$Lunch) <="Lunch"
 table1::label(hs$Par_edu)<="Parental Level of Education"
@@ -111,7 +151,7 @@ table1::label(hs$Writing) <= "Writing"
 
 table1::table1(~Math+Reading+Writing|Eth, data=hs)
 table1::table1(~Math+Reading+Writing|Lunch, data=hs)
-table1::table1(~Math+Reading+Writing|Gender,data=hs)
+table1::table1(~Math+Reading+Writing|Sex,data=hs)
 table1::table1(~Math+Reading+Writing|Test_prep, data=hs)
 table1::table1(~Math+Reading+Writing|Par_edu, data=hs)
 
@@ -123,7 +163,7 @@ table1::table1(~Math+Reading+Writing|Par_edu, data=hs)
 ```{r model-fit3, message=F}
 
 
-lm.1 <- lm(Math ~ Eth + Lunch + Par_edu + Test_prep + Gender, data=hs)
+lm.1 <- lm(Math ~ Eth + Lunch + Par_edu + Test_prep + Sex, data=hs)
 
 mod.summary <- summary(lm.1)
 
@@ -148,7 +188,7 @@ splits <- initial_split(hs,strata=Par_edu)
 cv_folds <- vfold_cv(training(splits))
 
 high_school.rec <- 
-  recipe(Math ~ Eth + Lunch + Gender + Test_prep,
+  recipe(Math ~ Eth + Lunch + Sex + Test_prep,
          data=training(splits)) %>% 
   step_dummy(all_nominal()) %>% 
   step_normalize(all_predictors()) %>% 
