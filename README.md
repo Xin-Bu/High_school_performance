@@ -1,6 +1,6 @@
 ## High school performance
 ### Dataset
-The data were collected from three high schools in the US, consisting of information on the students' performance in three continuous outcome variables: math, reading, and writing, as well as five predictors: their demographic information on gender, race/ethnicity, parental level of education, lunch type, and test preparation course .
+The data were collected from three high schools in the US, consisting of information on the students' performance as measured by three continuous outcome variables: math, reading, and writing, as well as five predictors: their demographic information on sex, race/ethnicity, parental level of education, lunch type, and test preparation course .
 
 The R code for data visualization, descriptive statistics, and multi-linear regression was written in R Markdown and knitted to html.
 #### Variables:
