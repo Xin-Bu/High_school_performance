@@ -4,9 +4,9 @@ The data were collected from three high schools in the US, consisting of informa
 
 The R code for data visualization, descriptive statistics, and multi-linear regression was written in R Markdown and knitted to html.
 #### Variables:
-* Math score: The student's score on a standardized mathematics test, a continuous variable
-* Reading score: The student's score on a standardized reading test, a continuous variable
-* Writing score: The student's score on a standardized writing test, a continuous variable
+* Math: The student's score on a standardized mathematics test, a continuous variable
+* Reading: The student's score on a standardized reading test, a continuous variable
+* Writing: The student's score on a standardized writing test, a continuous variable
 * Race/ethnicity: The student's racial or ethnic background (Asian, African-American, Hispanic, etc.)
 * Parental level of education: The highest level of education attained by the student's parent(s) or guardian(s)
 * Sex: The sex of the student (male/female)
