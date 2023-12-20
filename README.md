@@ -1,17 +1,17 @@
 ## High school performance
 ### Dataset
-The data were collected from three high schools in the US, consisting of information on the students' performance as measured by three continuous outcome variables: math, reading, and writing, as well as five predictors: their demographic information on sex, race/ethnicity, parental level of education, lunch type, and test preparation course .
+The data were collected from three high schools in the US, consisting of information on the students' performance as measured by three continuous outcome variables: `math`, `reading`, and `writing`, as well as five predictors: their demographic information on `race/ethnicity`, `parental level of education`, `sex`, `lunch type`, and `test preparation course`.
 
 The R code for data visualization, descriptive statistics, and multi-linear regression was written in R Markdown and knitted to html.
 #### Variables:
-* Math: The student's score on a standardized mathematics test, a continuous variable
-* Reading: The student's score on a standardized reading test, a continuous variable
-* Writing: The student's score on a standardized writing test, a continuous variable
-* Race/ethnicity: The student's racial or ethnic background (Asian, African-American, Hispanic, etc.)
-* Parental level of education: The highest level of education attained by the student's parent(s) or guardian(s)
-* Sex: The sex of the student (male/female)
-* Lunch: Whether the student receives free or reduced-price lunch (yes/no)
-* Test preparation course: Whether the student completed a test preparation course (yes/no)
+* `Math`: The student's score on a standardized mathematics test, a continuous variable
+* `Reading`: The student's score on a standardized reading test, a continuous variable
+* `Writing`: The student's score on a standardized writing test, a continuous variable
+* `Race/ethnicity`: The student's racial or ethnic background (Asian, African-American, Hispanic, etc.)
+* `Parental level of education`: The highest level of education attained by the student's parent(s) or guardian(s)
+* `Sex`: The sex of the student (male/female)
+* `Lunch`: Whether the student receives free or reduced-price lunch (yes/no)
+* `Test preparation course`: Whether the student completed a test preparation course (yes/no)
 #### Levels of categorical variables:
 
 | variables | level_1 | level_2 | level_3 | level_4 | level_5 | level_6 |
@@ -22,6 +22,6 @@ The R code for data visualization, descriptive statistics, and multi-linear regr
 | lunch  | free/reduced | standard |     |      |     |      |
 | test_prep course | completed | none |     |     |      |      |
 
-### Datasource 
+### Data source
 [High school performance](https://www.kaggle.com/datasets/rkiattisak/student-performance-in-mathematics) 
 
