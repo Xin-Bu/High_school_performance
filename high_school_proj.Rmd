@@ -16,18 +16,20 @@ html_document:
 
 ### Introduction
 
-The data were collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing which are continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project. The purpose of this project is to visualize the data, build a multi-linear regression model, and compare different models.
+The data were collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing which are continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project. The purpose of this project is to visualize the data, build a multi-linear regression model, apply a 10-fold cross-validation resampling method, and evaluate LM, SVM, and KNN model performance.
 
 
 ```{r setup, include=FALSE}
 library(tidyverse,warn.conflicts = F)
 library(tidymodels,warn.conflicts = F)
 library(lubridate,warn.conflicts = F)
+library(dplyr)
 library(here)
 library(table1)
 library(kknn)
 library(kernlab)
 library(gcookbook)
+
 
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -47,32 +49,28 @@ hs <- hs %>%
 
 ```
 
-### Data Visualization
-#### Create a new table to summarize test preparation by race
 
-```{r, message=FALSE}
-new_test_prep <- hs %>%
-  group_by(Eth,Test_prep)%>%
-  summarise(N=n())%>%
-  mutate(freq = N/sum(N),
-         pct = round(freq*100),0)
-
-new_test_prep%>% group_by(Test_prep)%>%
-  summarize(total=sum(pct))
-
-```
-
-#### Visualize the percentage of test prepartion by race
+#### Reorder the categorical variable Par_edu
 
 ```{r}
-ggplot(new_test_prep, aes(x=Eth, y=pct, fill=Test_prep))+
-  geom_col() +
-  labs(x = "Race", y = "Percent", title= "Test Preparation by Race")+
-  guides(fill= guide_legend(reverse = TRUE))+
-  scale_fill_brewer(palette=c("Paired"))
+
+hs$Par_edu <- factor(hs$Par_edu, levels=c("some high school","high school","some college","associate's degree","bachelor's degree","master's degree"))
 
 ```
 
+
+### Data Visualization
+
+#### Visualize the percentage of parental education level by race/ethnicity
+```{r}
+ggplot(hs, mapping = aes(x = Eth, fill = Par_edu))+
+  geom_bar(position = "fill")+
+  scale_fill_brewer(palette="Set3")+
+  scale_y_continuous(labels=percent)+
+  labs(x = "Race/ethnicity", y = " ", title= "Parental Education Level by Race/Ethnicity")+
+  theme(plot.title = element_text(hjust = 0.5, vjust = 3)) 
+
+```
 
 #### Visualize math, reading, and writing by sex
 
@@ -92,38 +90,37 @@ ggplot(hs,aes(x= Writing, fill = Sex, color = Sex))+
 
 ```
 
-#### Reorder the categorical variable Par_edu and then visualize the relationship between math and reading by parental education level and lunch type
+#### Visualize the relationship between math and reading by parental education level and lunch type
 
-```{r model-fit2, message=F}
-hs$Par_edu <- factor(hs$Par_edu, levels=c("some high school","high school","some college","associate's degree","bachelor's degree","master's degree"))
+```{r}
 
 ggplot(data = hs) +
-  geom_point(mapping = aes(x = Math, y = Reading, color = Lunch)) +
-  facet_wrap(~Par_edu) + 
-  scale_color_hue(h=c(45, 245))
+  geom_point(mapping = aes(x = Math, y = Reading, color = Lunch, shape = Lunch), size=2)+ 
+  scale_color_hue(l=45, c=60)+
+  facet_wrap(~Par_edu) 
+
 ```
 
 
-#### Visualize math, reading, and writing for those who completed the test preparation. 
+#### Visualize math, reading, and writing for those who completed the test preparation
 ```{r}
 test_prep <- hs %>%
   filter(Test_prep == "completed") %>%
   select(Math,Reading,Writing)
 
-#pairs(test_prep)
 pairs(test_prep,
         col = c("#E46726","#6D9EC1"),
         pch = 21,
         main = "Pairwise Correlation")
 ```
 
-#### Visualize the count of race/ethnicity by parental education level
+#### Visualize the count of race/ethnicity by test preparation
 ```{r}
 
-ggplot(hs, aes(x = Eth, fill = Par_edu)) + 
+ggplot(hs, aes(x = Eth, fill = Test_prep)) + 
   geom_bar(alpha = 1, position = "dodge2")+
-  labs(x="Race/ethnicity", y="Count", title = "Parental Education by Race/Ethnicity")+
-  scale_fill_brewer(palette=c("Set3"))+
+  labs(x="Race/ethnicity", y=" ", title = "Test Preparation by Race/Ethnicity")+
+  scale_fill_brewer(palette=c("Oranges"))+
   theme(plot.title = element_text(hjust = 0.5, vjust = 3)) 
 
 ```
@@ -133,8 +130,10 @@ ggplot(hs, aes(x = Eth, fill = Par_edu)) +
 ggplot(data = hs) +
   geom_boxplot(mapping = aes(x = reorder(Par_edu, Math, FUN = median), y = Math, fill=Sex)) +
   facet_wrap(~Lunch)+ 
-  scale_color_hue(h=c(45, 255)) +
-  coord_flip()
+  coord_flip()+
+  scale_fill_brewer(palette="Blues")+
+  labs(x="", y="Math", title = "Math by Sex and Parental Education Level")+
+  theme(plot.title = element_text(hjust = 0.5, vjust = 3)) 
 ```
 
 ### Descriptive statistics 
@@ -160,7 +159,7 @@ table1::table1(~Math+Reading+Writing|Par_edu, data=hs)
 ### Model Building
 #### Build a model predicting math based on the categorical variables. 
 
-```{r model-fit3, message=F}
+```{r model-fit2, message=F}
 
 
 lm.1 <- lm(Math ~ Eth + Lunch + Par_edu + Test_prep + Sex, data=hs)
