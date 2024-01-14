@@ -14,9 +14,9 @@ html_document:
 ---
 -------------
 
-### Introduction
+### 1. Introduction
 
-The data were collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing which are continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch, test preparation course are categorical variables as well as predictors in this project. The purpose of this project is to visualize the data, build a multi-linear regression model, apply a 10-fold cross-validation resampling method, and evaluate LM, SVM, and KNN model performance.
+The data was collected from three high schools in the US, consisting of information on the students' performance in math, reading, and writing, which are continuous outcome variables. The students' demographic information including gender, race/ethnicity, parental level of education, lunch type, test preparation course are categorical variables as well as predictors in this project. The purpose of this project is to visualize the data, build a multi-linear regression model, apply a 10-fold cross-validation resampling method, and evaluate LM, SVM, and KNN model performance.
 
 
 ```{r setup, include=FALSE}
@@ -29,28 +29,28 @@ library(table1)
 library(kknn)
 library(kernlab)
 library(gcookbook)
-
+library(patchwork)
 
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
-#### Load data
+#### 1.1. Load data
 ```{r model-fit1, message=F}
 hs <- read_csv("high_school.csv")
 head(hs)
 ```
 
-#### Rename the columns
+#### 1.2. Rename the columns
 ```{r message=F,warning=F}
 
 hs <- hs %>% 
-    rename("Sex" = "gender", "Eth" = "race/ethnicity", "Par_edu" = "parental level of education", "Lunch" = "lunch", "Test_prep" = "test preparation course", "Math" = "math score", "Reading" = "reading score", "Writing" = "writing score")
+    rename("gender" = "gender", "Eth" = "race/ethnicity", "Par_edu" = "parental level of education", "Lunch" = "lunch", "Test_prep" = "test preparation course", "Math" = "math score", "Reading" = "reading score", "Writing" = "writing score")
 
 ```
 
 
-#### Reorder the categorical variable Par_edu
+#### 1.3. Reorder the categorical variable Par_edu
 
 ```{r}
 
@@ -59,9 +59,9 @@ hs$Par_edu <- factor(hs$Par_edu, levels=c("some high school","high school","some
 ```
 
 
-### Data Visualization
+### 2. Data Visualization
 
-#### Visualize the percentage of parental education level by race/ethnicity
+#### 2.1. Visualize the percentage of parental education level by race/ethnicity
 ```{r}
 ggplot(hs, mapping = aes(x = Eth, fill = Par_edu))+
   geom_bar(position = "fill")+
@@ -72,25 +72,27 @@ ggplot(hs, mapping = aes(x = Eth, fill = Par_edu))+
 
 ```
 
-#### Visualize math, reading, and writing by sex
+#### 2.2. Visualize math, reading, and writing by gender
 
 ```{r}
 
-ggplot(hs,aes(x= Math, fill = Sex, color = Sex))+
+plot1 <- ggplot(hs,aes(x= Math, fill = gender, color = gender))+
   geom_density(alpha = 0.5,mapping=(aes(y = after_stat(scaled))))+
   scale_fill_manual(values = c("#E46726","#6D9EC1"))
 
-ggplot(hs,aes(x= Reading, fill = Sex, color = Sex))+
+plot2 <-ggplot(hs,aes(x= Reading, fill = gender, color = gender))+
   geom_density(alpha = 0.5,mapping=(aes(y = after_stat(scaled))))+
   scale_fill_manual(values = c("#E46726","#6D9EC1"))
 
-ggplot(hs,aes(x= Writing, fill = Sex, color = Sex))+
+plot3 <-ggplot(hs,aes(x= Writing, fill = gender, color = gender))+
   geom_density(alpha = 0.5,mapping=(aes(y = after_stat(scaled))))+
   scale_fill_manual(values = c("#E46726","#6D9EC1"))
 
+plot1+plot2+plot3+
+  plot_layout(ncol = 2)
 ```
 
-#### Visualize the relationship between math and reading by parental education level and lunch type
+#### 2.3. Visualize the relationship between math and reading by parental education level and lunch type
 
 ```{r}
 
@@ -102,7 +104,7 @@ ggplot(data = hs) +
 ```
 
 
-#### Visualize math, reading, and writing for those who completed the test preparation
+#### 2.4. Visualize math, reading, and writing for those who completed the test preparation
 ```{r}
 test_prep <- hs %>%
   filter(Test_prep == "completed") %>%
@@ -114,32 +116,32 @@ pairs(test_prep,
         main = "Pairwise Correlation")
 ```
 
-#### Visualize the count of race/ethnicity by test preparation
+#### 2.5. Visualize the count of test preparation (completed or none) by race/ethnicity
 ```{r}
 
 ggplot(hs, aes(x = Eth, fill = Test_prep)) + 
   geom_bar(alpha = 1, position = "dodge2")+
   labs(x="Race/ethnicity", y=" ", title = "Test Preparation by Race/Ethnicity")+
-  scale_fill_brewer(palette=c("Oranges"))+
+  scale_fill_brewer(palette=c("YlOrRd"))+
   theme(plot.title = element_text(hjust = 0.5, vjust = 3)) 
 
 ```
 
-#### Visualize math by lunch type and sex based on parental education level
+#### 2.6. Visualize math by lunch type and gender based on parental education level
 ```{r}
 ggplot(data = hs) +
-  geom_boxplot(mapping = aes(x = reorder(Par_edu, Math, FUN = median), y = Math, fill=Sex)) +
+  geom_boxplot(mapping = aes(x = reorder(Par_edu, Math, FUN = median), y = Math, fill=gender)) +
   facet_wrap(~Lunch)+ 
   coord_flip()+
-  scale_fill_brewer(palette="Blues")+
-  labs(x="", y="Math", title = "Math by Sex and Parental Education Level")+
+  scale_fill_brewer(palette="RdPu")+
+  labs(x="", y="Math", title = "Math by gender and Parental Education Level")+
   theme(plot.title = element_text(hjust = 0.5, vjust = 3)) 
 ```
 
-### Descriptive statistics 
-#### Math, reading, and writing related to each categorical variable
+### 3. Descriptive statistics 
+#### 3.1. Math, reading, and writing related to each categorical variable
 ```{r}
-table1::label(hs$Sex) <= "Sex"
+table1::label(hs$gender) <= "gender"
 table1::label(hs$Eth)<="Race/Ethnicity"
 table1::label(hs$Lunch) <="Lunch"
 table1::label(hs$Par_edu)<="Parental Level of Education"
@@ -150,19 +152,19 @@ table1::label(hs$Writing) <= "Writing"
 
 table1::table1(~Math+Reading+Writing|Eth, data=hs)
 table1::table1(~Math+Reading+Writing|Lunch, data=hs)
-table1::table1(~Math+Reading+Writing|Sex,data=hs)
+table1::table1(~Math+Reading+Writing|gender,data=hs)
 table1::table1(~Math+Reading+Writing|Test_prep, data=hs)
 table1::table1(~Math+Reading+Writing|Par_edu, data=hs)
 
 ```
 
-### Model Building
-#### Build a model predicting math based on the categorical variables. 
+### 4. Model Building
+#### 4.1. Build a model predicting math based on the categorical variables
 
 ```{r model-fit2, message=F}
 
 
-lm.1 <- lm(Math ~ Eth + Lunch + Par_edu + Test_prep + Sex, data=hs)
+lm.1 <- lm(Math ~ Eth + Lunch + Par_edu + Test_prep + gender, data=hs)
 
 mod.summary <- summary(lm.1)
 
@@ -179,7 +181,7 @@ knitr::kable(for.table,digits=2)
 
 ```
 
-#### Split a training dataset and build the model recipe
+#### 4.2. Split a training dataset and build the model recipe
 ```{r}
 set.seed(20231116)
 
@@ -187,7 +189,7 @@ splits <- initial_split(hs,strata=Par_edu)
 cv_folds <- vfold_cv(training(splits))
 
 high_school.rec <- 
-  recipe(Math ~ Eth + Lunch + Sex + Test_prep,
+  recipe(Math ~ Eth + Lunch + gender + Test_prep,
          data=training(splits)) %>% 
   step_dummy(all_nominal()) %>% 
   step_normalize(all_predictors()) %>% 
@@ -195,7 +197,7 @@ high_school.rec <-
 
 ```
 
-#### Build a linear regression model, support vector machine model, and k nearest neighbors model
+#### 4.3. Build a linear regression model, support vector machine model, and k nearest neighbors model
 ```{r}
 high_school.linear <- linear_reg() %>% 
   set_engine("lm")
@@ -224,7 +226,7 @@ knn.wf <- workflow() %>%
   add_model(high_school.knn)
 ```
 
-#### Create different values for tuning the model parameters and get results of tuning these models
+#### 4.4. Create different values for tuning the model parameters and get results of tuning those models
 ```{r cache = T}
 
 knn.grid <- grid_regular(
@@ -257,7 +259,7 @@ if(F){
 
 ```
 
-#### Finalize workflows, fit the training data, have each model to predict, and then we compare the results. 
+#### 4.5. Finalize workflows, fit the training data, use each model to predict, and then compare the results
 ```{r}
 
 svm.final <- svm.wf %>% 
